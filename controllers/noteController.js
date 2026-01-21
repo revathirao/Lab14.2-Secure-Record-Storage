@@ -1,4 +1,4 @@
-const { Note } = require("../models");
+const Notes = require("../models/Notes");
 
 /**
  * GET ALL NOTES FOR LOGGED-IN USER
@@ -6,8 +6,8 @@ const { Note } = require("../models");
  */
 async function getMyNotes(req, res) {
    try {
-      const notes = await Note.find({
-         user: req.user._id, // 👈 key line (ownership filter)
+      const notes = await Notes.find({
+         user: req.user._id, //ownership filter
       });
 
       res.json(notes);
@@ -25,7 +25,7 @@ async function updateNote(req, res) {
       // // Find the note first
       // const note = await Note.findById(req.params.id);
       // This needs an authorization check
-      const note = await Note.findByIdAndUpdate(req.params.id, req.body, {
+      const note = await Notes.findByIdAndUpdate(req.params.id, req.body, {
          new: true,
       });
 

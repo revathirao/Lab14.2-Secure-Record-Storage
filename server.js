@@ -1,6 +1,6 @@
 const express = require("express");
 const path = require("path");
-const db = require("./db/connection");
+const connectDB = require("./db/connection");
 const routes = require("./routes/"); // loads routes/index.js
 require("dotenv").config();
 
@@ -17,6 +17,9 @@ if (process.env.NODE_ENV === "production") {
 
 app.use(routes);
 
-db.once("open", () => {
-   app.listen(PORT, () => console.log(`🌍 Now listening on localhost:${PORT}`));
+// Connect to DB, then start server
+connectDB().then(() => {
+   app.listen(PORT, () => {
+      console.log(`🌍 Server running on http://localhost:${PORT}`);
+   });
 });
