@@ -1,6 +1,7 @@
-const { Schema, model } = require("mongoose");
-const bcrypt = require("bcrypt");
+const { Schema, model } = require("mongoose"); // Import Mongoose Schema and model
+const bcrypt = require("bcrypt"); // Import bcrypt for password hashing
 
+// Define the User schema
 const userSchema = new Schema({
    username: {
       type: String,
@@ -22,18 +23,22 @@ const userSchema = new Schema({
 });
 
 // hash user password
+// Pre-save middleware to hash the password before saving to DB
 userSchema.pre("save", async function (next) {
+   // Only hash if password is new or has been modified
    if (this.isNew || this.isModified("password")) {
-      const saltRounds = 10;
+      const saltRounds = 10; // Number of salt rounds for bcrypt
       this.password = await bcrypt.hash(this.password, saltRounds);
    }
 });
 
 // custom method to compare and validate password for logging in
 userSchema.methods.isCorrectPassword = async function (password) {
-   return bcrypt.compare(password, this.password);
+   return bcrypt.compare(password, this.password); // Returns true/false
 };
 
+// Create User model from schema
 const User = model("User", userSchema);
 
+// Export User model
 module.exports = User;

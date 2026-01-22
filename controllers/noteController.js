@@ -35,9 +35,9 @@ async function getMyNotes(req, res) {
    try {
       // Find all notes in the database where user field matches logged-in user
       const notes = await Notes.find({
-         user: req.user._id, //ownership filter
+         // user: req.user._id, //ownership filter
+         user: mongoose.Types.ObjectId(req.user._id),
       });
-      // ownership filter
       // Send notes as JSON response
       res.json(notes);
    } catch (err) {

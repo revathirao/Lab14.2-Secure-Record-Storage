@@ -1,19 +1,25 @@
-const jwt = require("jsonwebtoken"); // Import jsonwebtoken package to sign and verify JWTs
-const secret = process.env.JWT_SECRET; // Secret key used to sign and verify tokens (stored in .env file)
-const expiration = "2h"; // Token expiration time
+const jwt = require("jsonwebtoken");
+const secret = process.env.JWT_SECRET; // Secret for verifying token
+const expiration = "2h"; // Expiry time for token
 
 module.exports = {
    // Middleware to protect routes that require authentication
    authMiddleware: function (req, res, next) {
+      console.log("HEADERS RECEIVED:", req.headers); // Debugging
+
       // Try to get token from request body, query params, or headers
       let token =
          (req.body && req.body.token) ||
          (req.query && req.query.token) ||
          req.headers.authorization;
 
+      console.log("Raw token from request:", token); // <-- ADD THIS
+
       // If token is in Authorization header, remove "Bearer " part
       if (req.headers.authorization && typeof token === "string") {
          token = token.split(" ").pop().trim();
+         console.log("VERIFY SECRET:", process.env.JWT_SECRET);
+         console.log("Token after split:", token); // <-- ADD THIS
       }
 
       // If no token is found, block access
@@ -25,12 +31,14 @@ module.exports = {
 
       try {
          // Verify the token and extract the payload
-         const { data } = jwt.verify(token, secret, { maxAge: expiration });
+         const { data } = jwt.verify(token, secret, { maxAge: expiration }); // <-- Use 'data' here instead of 'payload'
+         console.log("Token is valid:", data); // <-- Corrected log
+
          // Attach user data to the request object
          req.user = data;
-      } catch {
+      } catch (err) {
          // Token is invalid or expired
-         console.log("Invalid token");
+         console.log("Invalid token:", err.message); // <-- Log error message for debugging
          return res.status(401).json({ message: "Invalid token." });
       }
 
