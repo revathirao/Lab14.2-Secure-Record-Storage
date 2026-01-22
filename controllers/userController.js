@@ -1,29 +1,25 @@
-// const express = require("express"); // Import Express framework
-// const User = require("../models/User"); // Import the User model (MongoDB schema for users)
-// const jwt = require("jsonwebtoken"); // Import jsonwebtoken to create and verify JWT tokens
-// const secret = process.env.JWT_SECRET; // Get the JWT secret key from environment variables
-// const expiration = "2h"; // Token expiration time (2 hours)
-// const bcrypt = require("bcrypt"); // Import bcrypt (used for hashing passwords – usually inside User model)
-// const { authMiddleware } = require("../../utils/auth");
+const User = require("../models/User"); //    Import User model to interact with the users collection in MongoDB
+const { signToken } = require("../utils/auth"); // Import the signToken helper to generate JWT tokens
 
-const User = require("../models/User");
-const { signToken } = require("../utils/auth");
 /**
  * REGISTER USER
  * POST /api/users/register
+ * Import the signToken helper to generate JWT tokens
  */
-
 async function registerUser(req, res) {
    try {
-      // Create a new user using data sent in req.body
+      //Create a new user using data sent in req.body
       const user = await User.create(req.body);
+
+      //Generate a JWT token for the newly registered user
       const token = signToken(user);
 
       // Send success response with created user
       // Return token and user
       res.status(201).json({ token, user });
    } catch (err) {
-      // Send error response if validation or creation fails
+      // Send an error response if creation fails (e.g., validation error)
+      // err.message gives a human-readable explanation of the problem
       res.status(400).json({ error: err.message });
    }
 }
@@ -31,6 +27,7 @@ async function registerUser(req, res) {
 /**
  * LOGIN USER
  * POST /api/users/login
+ * Authenticates a user and returns a JWT token
  */
 async function loginUser(req, res) {
    try {
@@ -59,20 +56,6 @@ async function loginUser(req, res) {
          });
       }
 
-      //   // JWT payload (NON-SENSITIVE data only)
-      //   const payload = {
-      //      _id: user._id,
-      //      username: user.username,
-      //   };
-
-      //   // Sign token
-      //   // Generate (sign) a JWT token
-      //   const token = jwt.sign(
-      //      { data: payload }, // Data stored inside the token
-      //      secret, // Secret key to sign the token
-      //      { expiresIn: expiration }, // Token expiration time
-      //   );
-
       // Generate token using starter helper
       const token = signToken(user);
 
@@ -84,4 +67,5 @@ async function loginUser(req, res) {
    }
 }
 
+//EXPORT CONTROLLER FUNCTIONS
 module.exports = { registerUser, loginUser };
