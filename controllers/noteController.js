@@ -1,5 +1,18 @@
 const Notes = require("../models/Notes");
 
+async function createNote(req, res) {
+   try {
+      const note = await Notes.create({
+         title: req.body.title,
+         content: req.body.content,
+         user: req.user._id,
+      });
+
+      res.status(201).json(note);
+   } catch (err) {
+      res.status(500).json(err);
+   }
+}
 /**
  * GET ALL NOTES FOR LOGGED-IN USER
  * GET /api/notes
@@ -16,6 +29,31 @@ async function getMyNotes(req, res) {
    }
 }
 
+// GET /api/notes/:id - single note (only if owner)
+async function getOneNotes(req, res) {
+   try {
+      const note = await Notes.findById(req.params.id);
+
+      if (!note) {
+         return res
+            .status(404)
+            .json({ message: "No note found with this id!" });
+      }
+
+      // Ownership check
+      if (note.user.toString() !== req.user._id) {
+         return res
+            .status(403)
+            .json({ message: "User is not authorized to view this note." });
+      }
+
+      res.json(note);
+   } catch (err) {
+      console.error(err);
+      res.status(500).json(err);
+   }
+}
+
 /**
  * UPDATE NOTE (only if owner)
  * PUT /api/notes/:id
@@ -23,11 +61,7 @@ async function getMyNotes(req, res) {
 async function updateNote(req, res) {
    try {
       // // Find the note first
-      // const note = await Note.findById(req.params.id);
-      // This needs an authorization check
-      const note = await Notes.findByIdAndUpdate(req.params.id, req.body, {
-         new: true,
-      });
+      const note = await Notes.findById(req.params.id);
 
       // If note does not exist
       if (!note) {
@@ -36,20 +70,43 @@ async function updateNote(req, res) {
             .json({ message: "No note found with this id!" });
       }
 
-      // Ownership check-user field on that note matches the authenticated user’s _id.
+      // Ownership check- user field on that note matches the authenticated user’s _id.
       if (note.user.toString() !== req.user._id) {
          return res
             .status(403)
             .json({ message: "User is not authorized to update this note." });
       }
 
-      // Update note
-      note.title = req.body.title || note.title;
-      note.content = req.body.content || note.content;
+      const updatedNote = await Notes.findByIdAndUpdate(
+         req.params.id,
+         req.body,
+         { new: true },
+      );
 
-      await note.save();
+      res.json(updatedNote);
+   } catch (err) {
+      res.status(500).json(err);
+   }
+}
 
-      res.json(note);
+async function deleteNote(req, res) {
+   try {
+      const note = await Notes.findById(req.params.id);
+
+      if (!note) {
+         return res
+            .status(404)
+            .json({ message: "No note found with this id!" });
+      }
+
+      if (note.user.toString() !== req.user._id) {
+         return res
+            .status(403)
+            .json({ message: "User is not authorized to delete this note." });
+      }
+
+      await Notes.findByIdAndDelete(req.params.id);
+      res.json({ message: "Note deleted!" });
    } catch (err) {
       res.status(500).json(err);
    }
@@ -57,5 +114,8 @@ async function updateNote(req, res) {
 
 module.exports = {
    getMyNotes,
+   getOneNotes,
    updateNote,
+   createNote,
+   deleteNote,
 };
