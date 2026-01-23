@@ -69,7 +69,6 @@ async function getOneNotes(req, res) {
             .status(403)
             .json({ message: "User is not authorized to view this note." });
       }
-
       // Send the note as JSON response
       res.json(note);
    } catch (err) {
@@ -104,6 +103,7 @@ async function updateNote(req, res) {
             .status(403)
             .json({ message: "User is not authorized to update this note." });
       }
+
       // Update the note with the new data from request body
       // { new: true } returns the updated note
       const updatedNote = await Notes.findByIdAndUpdate(
@@ -149,7 +149,6 @@ async function deleteNote(req, res) {
       // Send success response
       res.json({ message: "Note deleted!" });
    } catch (err) {
-      // Send success response
       res.status(500).json(err);
    }
 }
