@@ -3,11 +3,12 @@ const path = require("path"); // Import path module (used for serving static fil
 const connectDB = require("./db/connection"); // Import database connection function
 // Import all application routes
 // This loads routes/index.js
-const routes = require("./routes/");
+// const routes = require("./routes/");
 require("dotenv").config(); // Load environment variables from .env file
 
 // Create an Express application
 const app = express();
+app.use(express.urlencoded({ extended: true }));
 
 // Set server port (use .env PORT or default to 3000)
 const PORT = process.env.PORT || 3000;

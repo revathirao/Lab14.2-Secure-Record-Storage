@@ -1,11 +1,15 @@
 const jwt = require("jsonwebtoken");
 const secret = process.env.JWT_SECRET; // Secret for verifying token
-const expiration = "2h"; // Expiry time for token
+const expiration = "5h"; // Expiry time for token
 
+/**
+ * AUTH MIDDLEWARE
+ * Protects private routes by validating JWT
+ */
 module.exports = {
    // Middleware to protect routes that require authentication
    authMiddleware: function (req, res, next) {
-      console.log("HEADERS RECEIVED:", req.headers); // Debugging
+      // console.log("HEADERS RECEIVED:", req.headers); // Debugging
 
       // Try to get token from request body, query params, or headers
       let token =
@@ -13,13 +17,15 @@ module.exports = {
          (req.query && req.query.token) ||
          req.headers.authorization;
 
-      console.log("Raw token from request:", token); // <-- ADD THIS
+      // console.log("Raw token from request:", token);//debugging
 
+      //Look for token in Authorization header
+      // Format: "Bearer <token>"
       // If token is in Authorization header, remove "Bearer " part
       if (req.headers.authorization && typeof token === "string") {
          token = token.split(" ").pop().trim();
-         console.log("VERIFY SECRET:", process.env.JWT_SECRET);
-         console.log("Token after split:", token); // <-- ADD THIS
+         // console.log("VERIFY SECRET:", process.env.JWT_SECRET);// Debugging
+         // console.log("Token after split:", token);// Debugging
       }
 
       // If no token is found, block access
@@ -31,14 +37,14 @@ module.exports = {
 
       try {
          // Verify the token and extract the payload
-         const { data } = jwt.verify(token, secret, { maxAge: expiration }); // <-- Use 'data' here instead of 'payload'
-         console.log("Token is valid:", data); // <-- Corrected log
+         const { data } = jwt.verify(token, secret, { maxAge: expiration }); //Use 'data' instead of 'payload'
+         // console.log("Token is valid:", data); // debugging
 
          // Attach user data to the request object
          req.user = data;
       } catch (err) {
          // Token is invalid or expired
-         console.log("Invalid token:", err.message); // <-- Log error message for debugging
+         console.log("Invalid token:", err.message); // Log error message
          return res.status(401).json({ message: "Invalid token." });
       }
 
